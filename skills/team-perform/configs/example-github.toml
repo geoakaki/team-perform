@@ -1,0 +1,25 @@
+# GitHub organisation (or user). GitHub Enterprise: set base_url = "https://ghe.example.com".
+name = "acme-github"
+
+[source]
+provider     = "github"
+scope        = "acme-org"
+token_env    = "GITHUB_TOKEN"
+# token_op_ref = "op://<vault>/<item>/token"   # used when the env var is empty
+# include = "^(api|web)-"                      # regex on repo name
+# exclude = "sandbox|archive"
+
+[window]
+days = 90
+
+[sample]
+per_person   = 20
+patch_bytes  = 4000
+bundle_bytes = 60000
+min_commits  = 3
+
+[people.aliases]
+# "Jane Doe" = ["jdoe", "jdoe-acme", "jane@acme.com"]
+
+[run]
+threads = 12

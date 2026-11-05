@@ -1,0 +1,41 @@
+# Local git clones: no token, no network. Copy next to your runs (e.g. ~/.cache/team-perform/configs/)
+# and edit. Or skip the file entirely: `tp all --local ~/src/acme-api`.
+#
+# With `-c this.toml --local PATH`, --local replaces [source].paths and this file still supplies
+# window, sample, people and weights. That is how you add aliases to a quick local run.
+name = "acme-local"                  # output goes to <out>/<name>/
+
+[source]
+provider  = "local"
+paths     = ["~/src/acme/api", "~/src/acme/web"]   # a repo, any dir inside one, or a dir of clones
+# max_depth = 3                       # how deep to look for .git below a directory path
+# include   = "^(api|web)"            # regex on repo name (relative path under the scanned dir)
+# exclude   = "sandbox|archive"
+
+[window]
+days = 90                             # or: since = "2026-06-01"
+
+[sample]
+per_person   = 20
+patch_bytes  = 4000
+bundle_bytes = 60000
+min_commits  = 3
+
+[people]
+merge_same_name = true
+# exclude_authors = "(\\[bot\\]|renovate|gitlab-ci)"
+
+[people.aliases]
+# Local history has no provider logins, only author names + emails. Join what the run splits:
+# "Jane Doe" = ["jane.doe@acme.com", "jdoe@personal.example", "JD"]
+
+[weights]
+messages = 0.20
+size     = 0.20
+tests    = 0.15
+hygiene  = 0.25
+security = 0.20
+
+[run]
+threads = 8
+# out_dir = "~/.cache/team-perform/runs"   # default; or $TEAMPERF_OUT

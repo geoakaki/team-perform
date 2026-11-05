@@ -1,0 +1,39 @@
+# Self-hosted GitLab group. Copy to configs/<name>.local.toml (git-ignored) and edit.
+name = "acme-gitlab"                 # output goes to runs/<name>/
+
+[source]
+provider  = "gitlab"
+base_url  = "https://gitlab.example.com"   # /api/v4 is added automatically
+scope     = "acme/backend"                 # group path; subgroups are included. A username also works.
+token_env = "GITLAB_TOKEN"                 # read_api scope is enough
+# token_op_ref = "op://<vault>/<item>/token"   # used when the env var is empty
+# include = "^(api|web)-"                  # regex on repo name
+# exclude = "sandbox|archive"
+# include_archived = false
+# verify_tls = false                       # self-signed server; better: ca_file = "/path/ca.pem"
+
+[window]
+days = 90                                  # or: since = "2026-06-01"
+
+[sample]
+per_person   = 20       # last N non-merge commits per person get their diffs read
+patch_bytes  = 4000     # per file, when caching diffs
+bundle_bytes = 60000    # max size of one person's LLM review pack (~15k tokens)
+min_commits  = 3        # skip people with fewer non-merge commits than this
+
+[people]
+merge_same_name = true
+# exclude_authors = "(\\[bot\\]|renovate|gitlab-ci)"
+
+[people.aliases]
+# "Jane Doe" = ["jdoe", "jane.doe@acme.com", "Jane D"]
+
+[weights]               # rule-score weights, normalised over the dimensions present
+messages = 0.20
+size     = 0.20
+tests    = 0.15
+hygiene  = 0.25
+security = 0.20
+
+[run]
+threads = 8

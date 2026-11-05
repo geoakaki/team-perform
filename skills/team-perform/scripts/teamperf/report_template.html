@@ -1,0 +1,195 @@
+<title>__TITLE__</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#f5f6f4;--surface:#fff;--ink:#1b2320;--muted:#5d6a64;--line:#dde2de;--accent:#1f6f54;--accent-soft:#e3f0ea;
+  --h0:#eef1ef;--h1:#c6e6d3;--h2:#8fcca9;--h3:#4ea67a;--h4:#23734f;--h5:#114a32;--hink:#fff;
+  --good:#2e8a58;--warn:#b07d10;--bad:#c2452d;--good-bg:#e3f3ea;--warn-bg:#fbf1dc;--bad-bg:#fbe7e2;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans","Arial Narrow",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#121715;--surface:#1a211e;--ink:#e4ebe7;--muted:#9aa8a1;--line:#2c3632;--accent:#5fc496;--accent-soft:#1d3329;
+  --h0:#1d2521;--h1:#1d3a2c;--h2:#205a3e;--h3:#2c8057;--h4:#4eb080;--h5:#8ee0b5;--hink:#0d1210;
+  --good:#5cc48b;--warn:#e2b04a;--bad:#ec7b64;--good-bg:#1b3326;--warn-bg:#35291a;--bad-bg:#3a201b}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#121715;--surface:#1a211e;--ink:#e4ebe7;--muted:#9aa8a1;--line:#2c3632;--accent:#5fc496;--accent-soft:#1d3329;
+  --h0:#1d2521;--h1:#1d3a2c;--h2:#205a3e;--h3:#2c8057;--h4:#4eb080;--h5:#8ee0b5;--hink:#0d1210;
+  --good:#5cc48b;--warn:#e2b04a;--bad:#ec7b64;--good-bg:#1b3326;--warn-bg:#35291a;--bad-bg:#3a201b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:1200px;margin:0 auto;display:grid;gap:40px}
+h1,h2,h3{font-family:var(--cond);text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,40px);line-height:1.1}h2{font-size:22px}h3{font-size:17px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);max-width:70ch;margin:8px 0 0}
+.stats{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:12px;font:13px var(--mono);color:var(--muted)}
+.stats b{font:600 20px var(--cond);color:var(--ink);margin-right:6px;font-variant-numeric:tabular-nums}
+section{display:grid;gap:12px}
+.note{font-size:13px;color:var(--muted)}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+thead th{font:500 11px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+th.sortable{cursor:pointer;user-select:none}th.sortable:hover,th.sortable:focus-visible{color:var(--ink);outline:none}
+th.sorted::after{content:" ↓"}
+.num{text-align:right}
+.dev{display:grid;line-height:1.25}.dev b{font-weight:600}.dev span{font:12px var(--mono);color:var(--muted)}
+.pill{display:inline-block;min-width:34px;padding:2px 7px;border-radius:4px;font:500 13px var(--mono);text-align:center}
+.p-good{background:var(--good-bg);color:var(--good)}.p-warn{background:var(--warn-bg);color:var(--warn)}.p-bad{background:var(--bad-bg);color:var(--bad)}.p-na{color:var(--muted)}
+.overall{display:flex;align-items:center;gap:10px;min-width:150px}.overall b{font:700 18px var(--cond);width:32px}
+.bar{flex:1;height:8px;background:var(--h0);border-radius:2px;position:relative;overflow:hidden}.bar i{position:absolute;inset:0 auto 0 0}
+.stale{color:var(--warn);font-weight:500}
+.matrix td,.matrix th{padding:0;border:0}
+.matrix th.col{writing-mode:vertical-rl;transform:rotate(180deg);height:150px;padding:10px 6px;vertical-align:bottom}
+.matrix td.repo{padding:0 12px 0 10px;font:13px var(--mono);position:sticky;left:0;background:var(--surface)}
+.matrix td.cell{min-width:44px;height:28px;text-align:center;font:500 12px var(--mono);border:2px solid var(--surface)}
+.matrix td.tot{padding:0 12px;font:500 12px var(--mono);color:var(--muted);text-align:right}
+.matrix tr.grp td.repo{padding-top:14px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.matrix tfoot td{padding-top:8px;font:500 12px var(--mono);color:var(--muted);text-align:center}
+.legend{display:flex;align-items:center;gap:6px;font:12px var(--mono);color:var(--muted)}.legend i{width:18px;height:12px;border-radius:2px}
+.summary{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:6px;padding:18px 20px;display:grid;gap:10px}
+.summary p{margin:0;font-size:16px;max-width:75ch}.summary ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.flags{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.flags li{display:grid;grid-template-columns:80px 1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:4px;padding:10px 14px;font-size:14px}
+.flags li.medium{border-left-color:var(--warn)}.flags li.low{border-left-color:var(--line)}
+.sev{font:600 11px/1.8 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--bad)}.medium .sev{color:var(--warn)}.low .sev{color:var(--muted)}
+code{font:12.5px var(--mono)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px;display:grid;gap:10px;align-content:start}
+.card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.score{font:700 30px/1 var(--cond)}.score small{font:500 13px var(--mono);color:var(--muted)}
+.meta{font:12px var(--mono);color:var(--muted)}
+.dims{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.dims div{display:grid;gap:3px;text-align:center;font:10px var(--mono);color:var(--muted);text-transform:uppercase}
+.card ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+.lbl{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lbl.g{color:var(--good)}.lbl.b{color:var(--bad)}
+.verdict{margin:0;font-size:14px}
+.method{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:grid;gap:8px;font-size:14px}
+.method ul{margin:0;padding-left:18px;color:var(--muted);display:grid;gap:4px}
+.weights{display:flex;flex-wrap:wrap;gap:8px}.weights span{font:12px var(--mono);background:var(--accent-soft);color:var(--accent);padding:3px 8px;border-radius:3px}
+@media (max-width:520px){.cards{grid-template-columns:1fr}.flags li{grid-template-columns:1fr}}
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow" id="eyebrow"></div>
+  <h1 id="title"></h1>
+  <p class="lede" id="lede"></p>
+  <div class="stats" id="stats"></div>
+</header>
+<section class="summary" id="summary" hidden></section>
+<section><h2>Scores</h2><div class="note" id="scorenote"></div><div class="scroll"><table id="scores"></table></div></section>
+<section><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline"><h2>Commits by repository</h2><div class="legend" id="legend"></div></div>
+  <div class="note">Every branch, each commit counted once, merges included.</div>
+  <div class="scroll"><table class="matrix" id="matrix"></table></div><div class="note" id="quiet"></div></section>
+<section id="flagsec"><h2>Rule findings</h2><div class="note">Pattern matches in added lines of sampled commits. The matched values are never shown; open the commit to check each one.</div><ul class="flags" id="flags"></ul></section>
+<section><h2>People</h2><div class="cards" id="cards"></div></section>
+<section class="method"><h3>How the scores are made</h3><div class="weights" id="weights"></div>
+<ul>
+<li><b>Rule scores</b> come from scripts: messages over every commit that isn't a merge in the window; size, tests, hygiene and security from each person's last <span id="pp"></span> such commits and their diffs.</li>
+<li><b>Review scores</b> (when present) come from a reviewer reading the same sample and judging design, correctness and risk. Rules cannot see those.</li>
+<li>Identities are merged by login, email and author name, plus the aliases in the config.</li>
+<li>A short sample is not a performance review. Squash-merge workflows and single large features can look worse than they are.</li>
+</ul></section>
+</div>
+<script>
+const D = __DATA__;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cls = v => v == null ? "p-na" : v >= 7 ? "p-good" : v >= 5 ? "p-warn" : "p-bad";
+const col = v => v == null ? "var(--muted)" : v >= 7 ? "var(--good)" : v >= 5 ? "var(--warn)" : "var(--bad)";
+const fmt = v => v == null ? "–" : (+v).toFixed(1).replace(/\.0$/, "");
+const HD = [["messages","Messages"],["size","Size"],["tests","Tests"],["hygiene","Hygiene"],["security","Security"]];
+const RD = [["quality","Quality"],["hygiene","Size & focus"],["messages","Messages"],["security","Security"],["tests","Tests"]];
+const M = D.meta, P = D.people;
+const hasRev = P.some(p => p.review);
+const main = p => hasRev && p.review ? p.review.overall : p.heur.overall;
+
+document.getElementById("eyebrow").textContent = `${M.provider} · ${M.scope}`;
+document.getElementById("title").textContent = `${M.scope} Team Scorecard`;
+document.getElementById("lede").textContent = `Commit activity and commit quality from ${M.since} to ${M.until}. Generated ${M.generated}.`;
+document.getElementById("pp").textContent = M.per_person;
+const grand = P.reduce((a,p)=>a+p.commits,0);
+document.getElementById("stats").innerHTML = [[P.length,"people"],[M.repos_scanned+" / "+M.repos_total,"repos active"],[grand.toLocaleString(),"commits"],
+  [(P.reduce((a,p)=>a+(main(p)||0),0)/Math.max(1,P.length)).toFixed(1),"average score"]].map(([b,t])=>`<span><b>${b}</b>${t}</span>`).join("");
+document.getElementById("weights").innerHTML = Object.entries(M.weights).map(([k,v])=>`<span>${k} ${Math.round(v*100)}%</span>`).join("");
+
+if (D.summary) {
+  const s = document.getElementById("summary"); s.hidden = false;
+  s.innerHTML = `<div class="eyebrow">${esc(D.summary.eyebrow || "Summary")}</div><h2>${esc(D.summary.title || "Recommendation")}</h2>` +
+    (D.summary.headline ? `<p>${esc(D.summary.headline)}</p>` : "") +
+    (D.summary.points ? `<ul>${D.summary.points.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : "");
+}
+
+// scores
+const ranked = [...P].sort((a,b)=>(main(b)??-1)-(main(a)??-1)); ranked.forEach((p,i)=>p.rank=i+1);
+document.getElementById("scorenote").textContent = hasRev ? "Ranked by review score; rule scores shown alongside. Click a header to sort." : "Rule-based scores. Click a header to sort.";
+const cols = [{k:"rank",t:"#",v:p=>-p.rank},{k:"name",t:"Person",v:p=>p.name.toLowerCase()},
+  {k:"commits",t:"Commits",num:1,v:p=>p.commits},{k:"repos",t:"Repos",num:1,v:p=>p.repos},{k:"days",t:"Active days",num:1,v:p=>p.active_days},{k:"last",t:"Last",v:p=>p.last},
+  ...HD.map(([k,t])=>({k:"h_"+k,t,num:1,pill:1,v:p=>p.heur.scores[k]})),
+  {k:"hov",t:hasRev?"Rules":"Overall",bar:!hasRev,pill:hasRev,v:p=>p.heur.overall}];
+if (hasRev) cols.push({k:"rev",t:"Review",bar:1,v:p=>p.review?.overall});
+let sortK = hasRev ? "rev" : "hov";
+function drawScores(){
+  const c = cols.find(c=>c.k===sortK);
+  const rows = [...P].sort((a,b)=>{const x=c.v(a),y=c.v(b); return (y??-1e9)>(x??-1e9)?1:(y??-1e9)<(x??-1e9)?-1:a.rank-b.rank;});
+  const staleDay = new Date(Date.parse(M.until) - 21*864e5).toISOString().slice(0,10);
+  const cell = (c,p) => { const v = c.v(p);
+    if (c.k==="rank") return `<td style="font:600 15px var(--cond);color:var(--muted)">${p.rank}</td>`;
+    if (c.k==="name") return `<td><div class="dev"><b>${esc(p.name)}</b><span>${esc(p.logins.join(", ") || p.id)}</span></div></td>`;
+    if (c.k==="last") return `<td class="${v<staleDay?"stale":""}">${esc(v)}</td>`;
+    if (c.bar) return `<td><div class="overall"><b style="color:${col(v)}">${fmt(v)}</b><div class="bar"><i style="width:${(v||0)*10}%;background:${col(v)}"></i></div></div></td>`;
+    if (c.pill) return `<td class="num"><span class="pill ${cls(v)}">${fmt(v)}</span></td>`;
+    return `<td class="num">${v ?? "–"}</td>`; };
+  const t = document.getElementById("scores");
+  t.innerHTML = `<thead><tr>${cols.map(c=>`<th class="sortable ${c.num?"num":""} ${c.k===sortK?"sorted":""}" tabindex="0" data-k="${c.k}">${c.t}</th>`).join("")}</tr></thead><tbody>` +
+    rows.map(p=>`<tr>${cols.map(c=>cell(c,p)).join("")}</tr>`).join("") + "</tbody>";
+  t.querySelectorAll("th").forEach(th=>{const go=()=>{sortK=th.dataset.k;drawScores();}; th.onclick=go; th.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}};});
+}
+drawScores();
+
+// matrix
+const repos = {}; P.forEach(p=>Object.entries(p.per_repo).forEach(([r,n])=>{(repos[r] ||= {})[p.id]=n;}));
+const grp = r => r.includes("/") ? r.split("/")[0] : r.split(/[-_]/)[0];
+const groups = {}; Object.keys(repos).sort().forEach(r=>(groups[grp(r)] ||= []).push(r));
+const other = []; for (const [g,l] of Object.entries(groups)) if (l.length < 2) { other.push(...l); delete groups[g]; }
+if (other.length) groups["other"] = other;
+const H = ["var(--h1)","var(--h2)","var(--h3)","var(--h4)","var(--h5)"], steps=[10,30,75,150];
+const shade = n => { if(!n) return ["var(--h0)",""]; const i = steps.findIndex(s=>n<s); const k = i<0?4:i; return [H[k], k>=3?"var(--hink)":"var(--ink)"]; };
+document.getElementById("legend").innerHTML = "fewer "+H.map(c=>`<i style="background:${c}"></i>`).join("")+" more";
+let mh = `<thead><tr><th></th>${ranked.map(p=>`<th class="col">${esc(p.name)}</th>`).join("")}<th class="col">Total</th></tr></thead><tbody>`;
+for (const g of Object.keys(groups).sort((a,b)=>a==="other"?1:b==="other"?-1:a.localeCompare(b))) {
+  mh += `<tr class="grp"><td class="repo" colspan="${ranked.length+2}">${esc(g)}</td></tr>`;
+  for (const r of groups[g]) { let t=0;
+    mh += `<tr><td class="repo">${esc(r)}</td>` + ranked.map(p=>{const n=repos[r][p.id]||0;t+=n;const [bg,fg]=shade(n);return `<td class="cell" style="background:${bg};color:${fg}" title="${esc(p.name)} · ${esc(r)}: ${n}">${n||""}</td>`;}).join("") + `<td class="tot">${t}</td></tr>`; }
+}
+mh += `</tbody><tfoot><tr><td class="repo">Total</td>${ranked.map(p=>`<td>${p.commits}</td>`).join("")}<td>${grand}</td></tr></tfoot>`;
+document.getElementById("matrix").innerHTML = mh;
+document.getElementById("quiet").textContent = D.quiet_repos.length ? "No commits in this window: " + D.quiet_repos.join(", ") + "." : "";
+
+// findings
+const sevRank = {high:0,medium:1,low:2};
+const fl = P.flatMap(p=>p.heur.findings.map(f=>({...f,who:p.name}))).sort((a,b)=>sevRank[a.severity]-sevRank[b.severity]);
+if (!fl.length) document.getElementById("flagsec").hidden = true;
+document.getElementById("flags").innerHTML = fl.map(f=>`<li class="${f.severity}"><div class="sev">${f.severity}</div><div><b>${esc(f.rule)}</b> in <code>${esc(f.repo)}/${esc(f.file)}</code> · <code>${esc(f.sha)}</code> · ${esc(f.who)}</div></li>`).join("");
+
+// cards
+document.getElementById("cards").innerHTML = ranked.map(p=>{
+  const r = p.review, h = p.heur, m = h.metrics;
+  const dims = r && r.scores ? RD.map(([k,t])=>[r.scores[k],t]) : HD.map(([k,t])=>[h.scores[k],t]);
+  return `<article class="card">
+  <div class="card-top"><div class="dev"><h3>${p.rank}. ${esc(p.name)}</h3><span>${esc(p.logins.join(", ")||p.id)}</span></div>
+  <div class="score" style="color:${col(main(p))}">${fmt(main(p))}<small>/10</small></div></div>
+  <div class="meta">${p.commits} commits (${p.merges} merges) · ${p.repos} repos · ${p.active_days} active days · last ${esc(p.last)}</div>
+  <div class="dims">${dims.map(([v,t])=>`<div><span class="pill ${cls(v)}">${fmt(v)}</span>${t}</div>`).join("")}</div>
+  <div class="meta">${r?"Rule score "+fmt(h.overall)+" · ":""}vague messages ${m.vague_message_pct}% · reverts ${m.reverts} · median ${m.median_lines ?? "–"} lines/commit · tests with code ${m.test_ratio_pct ?? "–"}%</div>
+  ${r?.verdict ? `<p class="verdict">${esc(r.verdict)}</p>` : ""}
+  ${r?.strengths?.length ? `<div class="lbl g">Strengths</div><ul>${r.strengths.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+  ${r?.issues?.length ? `<div class="lbl b">Issues</div><ul>${r.issues.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+  ${!r && p.sample_commits.length ? `<div class="lbl">Latest sampled commits</div><ul>${p.sample_commits.slice(0,5).map(c=>`<li><code>${esc(c.sha)}</code> ${esc(c.subject)} <span class="meta">(${c.lines} lines)</span></li>`).join("")}</ul>` : ""}
+  </article>`; }).join("");
+</script>

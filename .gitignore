@@ -1,0 +1,7 @@
+# run output holds client code diffs, emails and possibly leaked secrets - never commit it
+runs/
+*.local.toml
+__pycache__/
+*.pyc
+.DS_Store
+.env

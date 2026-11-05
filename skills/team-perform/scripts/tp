@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# teamperf launcher - run from anywhere.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PYTHONPATH="$DIR${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m teamperf "$@"

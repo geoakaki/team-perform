@@ -260,7 +260,7 @@ def cmd_bundle(ctx):
             head = (f"## {c['sha'][:10]} {c['repo']} {c['date'][:10] if c['date'] else ''} "
                     f"+{c['additions']}/-{c['deletions']} {len(c['files'])} files\n"
                     f"msg: {heuristics.redact(c['message'].strip()[:400])}\n"
-                    f"files: {', '.join(f['path'] + f' (+{f['additions']}/-{f['deletions']})' for f in c['files'][:25])}"
+                    "files: " + ", ".join(f"{f['path']} (+{f['additions']}/-{f['deletions']})" for f in c["files"][:25])
                     + (" ..." if len(c["files"]) > 25 else ""))
             body, left = [], per_commit - len(head)
             for f in c["files"]:
@@ -291,6 +291,7 @@ def main(argv=None):
     ap.add_argument("--days", type=int)
     ap.add_argument("--since", help="YYYY-MM-DD, overrides --days")
     ap.add_argument("--per-person", type=int)
+    ap.add_argument("--open", action="store_true", help="open report.html in the browser when done")
     ap.add_argument("--out", help="output root (default $TEAMPERF_OUT or ~/.cache/team-perform/runs)")
     a = ap.parse_args(argv)
     ctx = Ctx(a.config, a)
@@ -300,6 +301,13 @@ def main(argv=None):
     log(f"[{a.command}] output: {ctx.dir}")
     for s in steps:
         s(ctx)
+    if a.open:
+        path = ctx.p("report.html")
+        if not os.path.exists(path):
+            sys.exit("no report.html yet - run `tp report` first")
+        import webbrowser  # macOS: open, Linux: xdg-open / $BROWSER
+        if not webbrowser.open("file://" + path):
+            log(f"could not start a browser; open this file: {path}")
 
 
 if __name__ == "__main__":

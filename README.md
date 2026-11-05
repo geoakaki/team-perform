@@ -94,7 +94,7 @@ days = 120
 exclude_authors = "(\\[bot\\]|renovate|jenkins)"
 
 [people.aliases]
-"Jane Doe" = ["jane@acme.com", "jd@personal.example"]
+"Jane Doe" = ["jane@example.com", "jd@personal.example"]
 
 [weights]
 tests = 0.30

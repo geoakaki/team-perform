@@ -54,7 +54,7 @@ automatically. If two rows look like one person, propose aliases, then write a s
 ```toml
 # ~/.cache/team-perform/configs/<name>.toml
 [people.aliases]
-"Jane Doe" = ["jane@acme.com", "jd@personal.example"]
+"Jane Doe" = ["jane@example.com", "jd@personal.example"]
 ```
 
 and re-score without re-collecting:

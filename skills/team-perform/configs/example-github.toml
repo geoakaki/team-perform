@@ -19,7 +19,7 @@ bundle_bytes = 60000
 min_commits  = 3
 
 [people.aliases]
-# "Jane Doe" = ["jdoe", "jdoe-acme", "jane@acme.com"]
+# "Jane Doe" = ["jdoe", "jdoe-acme", "jane@example.com"]
 
 [run]
 threads = 12

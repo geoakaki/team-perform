@@ -26,7 +26,7 @@ merge_same_name = true
 # exclude_authors = "(\\[bot\\]|renovate|gitlab-ci)"
 
 [people.aliases]
-# "Jane Doe" = ["jdoe", "jane.doe@acme.com", "Jane D"]
+# "Jane Doe" = ["jdoe", "jane.doe@example.com", "Jane D"]
 
 [weights]               # rule-score weights, normalised over the dimensions present
 messages = 0.20

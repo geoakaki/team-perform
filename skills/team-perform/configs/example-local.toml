@@ -27,7 +27,7 @@ merge_same_name = true
 
 [people.aliases]
 # Local history has no provider logins, only author names + emails. Join what the run splits:
-# "Jane Doe" = ["jane.doe@acme.com", "jdoe@personal.example", "JD"]
+# "Jane Doe" = ["jane.doe@example.com", "jdoe@personal.example", "JD"]
 
 [weights]
 messages = 0.20

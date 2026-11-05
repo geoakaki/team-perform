@@ -8,6 +8,8 @@
   tp score    -c cfg   people, matrix, rule-based scores                        -> people.json, matrix.csv, scores.csv
   tp bundle   -c cfg   compact per-person review packs for an LLM reviewer      -> bundle/<person>.md
   tp report   -c cfg   self-contained HTML report (merges reviews/*.json)       -> report.html
+  tp export   -c cfg   the report, ready to publish as an artifact or send       -> export.html
+                       (--anonymize: names -> "Developer A", ...; --title "...")
   tp all      -c cfg   all of the above in order
 """
 import argparse
@@ -280,9 +282,16 @@ def cmd_report(ctx):
     log(f"[report] {path}")
 
 
+def cmd_export(ctx, anonymize=False, title=None):
+    path, left = report.export(ctx, anonymize=anonymize, title=title)
+    log(f"[export] {path}" + ("  (anonymized)" if anonymize else ""))
+    if left:
+        log(f"  warning: still present after anonymizing: {', '.join(left)} - edit reviews/*.json or pass --title")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="tp", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["collect", "sample", "score", "bundle", "report", "all"])
+    ap.add_argument("command", choices=["collect", "sample", "score", "bundle", "report", "export", "all"])
     ap.add_argument("-c", "--config", help="TOML config (optional with --local)")
     ap.add_argument("--local", action="append", metavar="PATH",
                     help="local git clone, or a directory of clones (repeatable); replaces the config's [source]")
@@ -291,20 +300,23 @@ def main(argv=None):
     ap.add_argument("--days", type=int)
     ap.add_argument("--since", help="YYYY-MM-DD, overrides --days")
     ap.add_argument("--per-person", type=int)
-    ap.add_argument("--open", action="store_true", help="open report.html in the browser when done")
+    ap.add_argument("--open", action="store_true", help="open the report (or export) in the browser when done")
+    ap.add_argument("--anonymize", action="store_true", help="export: replace names and logins with Developer A, B, ...")
+    ap.add_argument("--title", help="export: page title (default: reviews/_report.json title, else '<scope> Team Scorecard')")
     ap.add_argument("--out", help="output root (default $TEAMPERF_OUT or ~/.cache/team-perform/runs)")
     a = ap.parse_args(argv)
     ctx = Ctx(a.config, a)
     steps = {"collect": [cmd_collect], "sample": [cmd_sample], "score": [cmd_score], "bundle": [cmd_bundle],
              "report": [cmd_report],
+             "export": [lambda c: cmd_export(c, a.anonymize, a.title)],
              "all": [cmd_collect, cmd_sample, cmd_score, cmd_bundle, cmd_report]}[a.command]
     log(f"[{a.command}] output: {ctx.dir}")
     for s in steps:
         s(ctx)
     if a.open:
-        path = ctx.p("report.html")
+        path = ctx.p("export.html" if a.command == "export" else "report.html")
         if not os.path.exists(path):
-            sys.exit("no report.html yet - run `tp report` first")
+            sys.exit(f"no {os.path.basename(path)} yet - run `tp report` first")
         import webbrowser  # macOS: open, Linux: xdg-open / $BROWSER
         if not webbrowser.open("file://" + path):
             log(f"could not start a browser; open this file: {path}")

@@ -1,6 +1,6 @@
 ---
 name: team-perform
-description: Team activity and commit-quality analysis of git history: who works on which repo, rule-based 0-10 scores (commit messages, size, tests, hygiene, security patterns) and an optional token-lean LLM review per person, rendered as one self-contained HTML report. Works on LOCAL CLONES (a repo, several repos, or a directory of clones, no token), a GitHub org or a GitLab group (gitlab.com or self-hosted). TRIGGER when the user asks to analyse/check/score/review a team, contributors, developers or commit quality of a repo, a cloned repo, a folder of repos, an org or a group; asks who works on what, who owns which repo, who is most active; wants a team scorecard, contributor report or developer performance review; or asks for hiring/promotion input based on code history.
+description: Team activity and commit-quality analysis of git history: who works on which repo, rule-based 0-10 scores (commit messages, size, tests, hygiene, security patterns) and an optional token-lean LLM review per person, rendered as one self-contained HTML report. Works on LOCAL CLONES (a repo, several repos, or a directory of clones, no token), a GitHub org or a GitLab group (gitlab.com or self-hosted). TRIGGER when the user asks to analyse/check/score/review a team, contributors, developers or commit quality of a repo, a cloned repo, a folder of repos, an org or a group; asks who works on what, who owns which repo, who is most active; wants a team scorecard, contributor report or developer performance review; asks for hiring/promotion input based on code history; or wants a team report exported, anonymized, shared or published as an HTML page/artifact.
 ---
 
 # team-perform
@@ -69,18 +69,47 @@ path, `references/review-rubric.md` (next to this file) as its instructions, and
 line. Skip people below `min_commits` (they have no bundle). Bundle diffs arrive with secret
 matches already masked as `[REDACTED:<rule>]`.
 
-If the user asked for a recommendation (hiring, promotion, ownership), write
-`reviews/_summary.json` per the rubric. Then re-render: `$TP report <same flags>`.
+Once the reviews are in, write the page files described in the rubric (both optional, plain
+language, written for a manager):
+
+- `reviews/_report.json`: title, eyebrow, lede, `repo_groups` for the matrix, curated `security`
+  issues (confirmed by a reviewer; file and kind of secret, **never the value**), `method_notes`.
+- `reviews/_summary.json`, only if the user asked for a recommendation (hiring, promotion,
+  ownership): headline, `picks`, a role `table`, two `columns`, a closing `ask`.
+
+Then re-render: `$TP report <same flags>`.
 
 ## 4. Reply
 
 - Ranked table: person, review score (if any), rule score, commits, repos, last commit.
 - Ownership in one or two lines from `matrix.csv` (who carries which repo, bus-factor-1 repos).
 - High-severity findings as **rule + file + sha only**.
-- The report path. Offer to publish `report.html` as a private artifact only if the user wants
-  it shared; it carries names, commit subjects and repo names.
+- The report path, and an offer to export it as a shareable page (step 5).
 
 Never paste diff contents, author emails or secret values into the reply.
+
+## 5. Export and publish (when the user wants to share it)
+
+```bash
+$TP export <same flags> [--anonymize] [--title "Acme Developer Scorecard"]   # -> <out>/<name>/export.html
+```
+
+`export.html` is the report as one self-contained page that meets the artifact rules (starts with
+`<!DOCTYPE html>`, inline data and script, only Google Fonts loaded). It never holds emails.
+`--anonymize` turns every name and login, including in review text, into "Developer A", "B"...
+in rank order, and warns about any name it could not replace.
+
+1. **Ask before publishing**, every time. The page names real people next to scores and security
+   issues. Ask whether to anonymize. Before you publish, read the curated `security` text again:
+   no secret values, and nothing that makes an open, unrotated issue easy to exploit.
+2. Publish with the artifacts tool when it is available: `publish_files` with
+   `files=[{as: "index.html", path: "<out>/<name>/export.html"}]`, the page title and
+   `icon: "chart"`. Read its `guide` (topic `pages`) first if you haven't this session. A new
+   artifact is private to the user; sharing is their choice on claude.ai.
+3. To update a page published earlier, pass its `slug` and current `base_version` (from
+   `get_artifact`), and `shared_live` if it is already shared.
+4. Reply with the URL and who can see it. If there is no artifacts tool, give the file path; it
+   opens in any browser and can be sent as a single file.
 
 ## Caveats to state when it matters
 
@@ -97,4 +126,4 @@ Never paste diff contents, author emails or secret values into the reply.
 
 - Rule-score dimensions and weights: `references/scoring.md`.
 - Every config key, commented: `configs/example-{local,github,gitlab}.toml`.
-- Reviewer rubric and JSON shapes: `references/review-rubric.md`.
+- Reviewer rubric, per-person JSON and the page files: `references/review-rubric.md`.

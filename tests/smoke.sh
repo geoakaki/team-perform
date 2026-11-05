@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TP="$ROOT/skills/team-perform/scripts/tp"
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
+trap '[[ -n "${KEEP:-}" ]] && echo "kept: $WORK" || rm -rf "$WORK"' EXIT
 
 FAKE_KEY="AKIA""ABCDEFGHIJKLMNOP"   # matches the aws-access-key rule; split so this file itself doesn't
 repo="$WORK/clones/demo-api"
@@ -58,4 +58,46 @@ EOF
 grep -rqF "$FAKE_KEY" "$d"/{people.json,scores.csv,matrix.csv,report.html,bundle} \
   && fail "secret value leaked into a report artefact"
 grep -qF "jane@example.com" "$d/report.html" && fail "author email embedded in report.html"
+
+# export: reviewer files that name people in free text, then a plain and an anonymized export
+mkdir -p "$d/reviews"
+cat > "$d/reviews/jane-doe.json" <<'EOF'
+{"person": "jane-doe", "area": "Math helpers", "scores": {"quality": 8, "hygiene": 8, "messages": 9, "security": 9, "tests": 8},
+ "overall": 8.3, "verdict": "Jane writes small, tested changes.", "strengths": ["Tests with every helper (abc1234, src_1.js)"], "issues": ["None serious"]}
+EOF
+cat > "$d/reviews/john-roe.json" <<'EOF'
+{"person": "john-roe", "area": "Utilities", "scores": {"quality": 4, "hygiene": 2, "messages": 1, "security": 2, "tests": 0},
+ "overall": 2.4, "verdict": "John Roe leaves debug output and a key in config.js.", "strengths": ["Fast"], "issues": ["Unlike Jane, no tests"]}
+EOF
+cat > "$d/reviews/_summary.json" <<'EOF'
+{"eyebrow": "Hiring recommendation", "title": "Who to hire", "headline": "Take **Jane Doe**; coach John.",
+ "picks": [{"name": "Jane Doe", "tag": "Best quality · 8.3", "points": ["Tested helpers"], "caveat": "Check availability"}],
+ "table": {"title": "Only if the role needs them", "columns": ["Role", "Person", "Why"], "rows": [["Utilities", "John", "Only one in util"]]},
+ "columns": [{"title": "Before you decide", "points": ["Paid trial task"]}], "ask": "Depends on the role."}
+EOF
+cat > "$d/reviews/_report.json" <<'EOF'
+{"title": "Demo Developer Scorecard", "eyebrow": "local · demo-api", "repo_groups": {"API": "^demo"},
+ "security": [{"severity": "high", "title": "AWS key committed in config.js", "detail": "Rotate it; committed by @john-roe in `config.js`."}],
+ "method_notes": ["Two people, one repo."]}
+EOF
+"$TP" export --local "$WORK/clones" --out "$out" --name smoke 2>&1 | sed 's/^/  | /'
+"$TP" export --local "$WORK/clones" --out "$out" --name smoke --anonymize 2>&1 | tee "$WORK/anon.log" | sed 's/^/  | /'
+e="$d/export.html"
+[[ -s "$e" ]] || fail "missing export.html"
+head -c 15 "$e" | grep -qi "<!DOCTYPE html" || fail "export.html must start with <!DOCTYPE html>"
+grep -q "<title>Demo Developer Scorecard</title>" "$e" || fail "export title"
+grep -qF "Developer A" "$e" || fail "no pseudonyms in anonymized export"
+grep -qiE "jane|john|\bdoe\b|\broe\b" "$e" && fail "a real name survived --anonymize"
+grep -q "warning" "$WORK/anon.log" && fail "anonymize reported leftovers"
+grep -qF "$FAKE_KEY" "$e" && fail "secret value in export"
+python3 -I - "$e" <<'EOF' || exit 1
+import json, re, sys
+html = open(sys.argv[1]).read()
+data = json.loads(re.search(r"const D = (\{.*?\});\n", html, re.S).group(1).replace("<\\/", "</"))
+top = max(data["people"], key=lambda p: p["review"]["overall"])
+assert top["name"] == "Developer A", "Developer A should be the top-ranked person"
+assert data["summary"]["picks"][0]["name"] == "Developer A", data["summary"]["picks"][0]
+assert "Developer B" in data["summary"]["table"]["rows"][0][1]
+print("  ok: export, anonymized names in reviews, summary, security and table")
+EOF
 echo "PASS"

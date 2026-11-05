@@ -45,6 +45,7 @@ Start a new Claude Code session and ask in plain words:
 | *Who owns what across all repos in ~/code?* | every repository in the folder, with the people behind each |
 | *Review each developer on ~/code/shop-api and summarise strengths and issues* | scores plus a written review per person |
 | *Jane shows up twice, merge her two emails* | the report again, with one row for Jane |
+| *Who should we hire from this team? Export it for my manager* | a recommendation box with picks, then a page to share |
 
 Claude replies with a short ranked table, the main findings, and where the report is saved.
 
@@ -57,6 +58,18 @@ Claude replies with a short ranked table, the main findings, and where the repor
 Add `--days 30` or `--since 2026-06-01` to change the period. Pass `--local` several times, or
 give it a folder, to cover more than one repository. GitHub organisations and GitLab groups also
 work. See [advanced use](docs/advanced.md).
+
+## Share it
+
+Ask *Export the report as a page I can share*, or *… with names hidden*. Claude builds one web
+page (scores, recommendations, security issues, reviews; [sections](docs/advanced.md#export-and-share))
+and, after you confirm, publishes it as a private page on claude.ai. You choose who to share it with. Without Claude:
+
+```bash
+~/.claude/skills/team-perform/scripts/tp export --local ~/code/shop-api --anonymize --open
+```
+
+`--anonymize` shows people as "Developer A", "Developer B"… in rank order.
 
 ## Reading the scores
 

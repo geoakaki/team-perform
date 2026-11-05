@@ -33,9 +33,37 @@ gives full history.
 | `score`   | merges identities, scores people, builds the person x repo matrix | `people.json`, `matrix.csv`, `scores.csv` |
 | `bundle`  | one compact review pack per person for the LLM review, secrets masked | `bundle/<person>.md` |
 | `report`  | one self-contained HTML page, with reviews merged in if present | `report.html` |
+| `export`  | the same page, ready to publish or send (not part of `all`) | `export.html` |
 
 Output goes to `~/.cache/team-perform/runs/<name>/`. Change it with `--out`, `run.out_dir` or
 `$TEAMPERF_OUT`.
+
+## Export and share
+
+```bash
+$TP export --local ~/code/api                          # -> <out>/<name>/export.html
+$TP export --local ~/code/api --anonymize --open       # names and logins -> Developer A, B, ...
+$TP export --local ~/code/api --title "Acme Developer Scorecard"
+```
+
+`export.html` is the report as one self-contained page: it starts with `<!DOCTYPE html>`, carries
+its data and script inline, loads only Google Fonts, and has no emails in it. It can be sent as
+a single file or published as a claude.ai artifact (the skill does that after asking you).
+`--anonymize` also rewrites names inside the review text and warns about any it could not
+replace. Repo and org names are kept; set `--title` if the org name should not show either.
+
+The page has these sections; the ones marked *optional* appear when the reviewer files exist
+(shapes in [`review-rubric.md`](../skills/team-perform/references/review-rubric.md)):
+
+| section | comes from |
+|---|---|
+| title, eyebrow, intro | `reviews/_report.json` (*optional*), else the scope and period |
+| recommendation box: headline, picks, role table, two columns, closing ask | `reviews/_summary.json` (*optional*) |
+| scores table, sortable, with a "Works on" column | `people.json` + `reviews/<person>.json` (`area`) |
+| commits by repository, grouped | the matrix, groups from `_report.json` `repo_groups` (*optional*) |
+| security issues to fix | curated `_report.json` `security` (*optional*), else the raw rule findings |
+| developer review cards | `reviews/<person>.json`, else rule metrics and the latest commits |
+| how the scores are made | weights plus `_report.json` `method_notes` (*optional*) |
 
 ## Config file
 
